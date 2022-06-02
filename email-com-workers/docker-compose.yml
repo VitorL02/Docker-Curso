@@ -9,3 +9,9 @@ services:
       - ./scripts:/scripts
       # De acordo com a documentação da imagem o docker-entrypoint seria o caminho onde e possivel executar comandos sql 
       - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+  frontend:
+    image: nginx:1.13
+    volumes:
+      - ./web:/usr/share/nginx/html/
+    ports:
+      - 80:80

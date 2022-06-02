@@ -8,4 +8,6 @@ CREATE TABLE emails (
     assunto VARCHAR(100) NOT NULL,
     mensagem VARCHAR(250) NOT NULL
 );
-GRANT ALL ON SCHEMA emails TO public;
+\l 
+\c email_sender
+\d emails
