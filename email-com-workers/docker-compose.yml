@@ -1,0 +1,13 @@
+version: '3'
+volumes:
+  dados:
+services:
+  db:
+    image: postgres:9.6
+    volumes:
+      - dados:/var/lib/postgres/data
+      - .//database:/script
+      # De acordo com a documentação da imagem o docker-entrypoint seria o caminho onde e possivel executar comandos sql 
+      - .//database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      POSTGRES_PASSWORD: "1"
