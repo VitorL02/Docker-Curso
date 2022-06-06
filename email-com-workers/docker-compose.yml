@@ -1,13 +1,57 @@
 version: '3'
 volumes:
   dados:
+networks:
+  banco:
+  web:
+  fila:
 services:
   db:
     image: postgres:9.6
     volumes:
-      - dados:/var/lib/postgres/data
-      - .//database:/script
+      - dados:/var/lib/postgresql/data
+      - ./scripts:/scripts
       # De acordo com a documentação da imagem o docker-entrypoint seria o caminho onde e possivel executar comandos sql 
-      - .//database/init.sql:/docker-entrypoint-initdb.d/init.sql
-    environment:
-      POSTGRES_PASSWORD: "1"
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      # define que o banco de dados pertence somente a rede banco 
+      - banco
+  frontend:
+    image: nginx:1.13
+    volumes:
+      - ./web:/usr/share/nginx/html/
+      # Configuração do proxy reverso
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - 80:80
+    networks:
+      - web
+    depends_on:
+      - app
+  app:
+    image: python:3.6
+    volumes:
+      - ./app:/app
+    working_dir: /app
+    command: bash ./app.sh
+    networks:
+      - banco
+      - web
+      - fila
+    depends_on:
+      - db
+      - queue
+  queue:
+    image: redis:3.2
+    networks:
+      - fila
+  workers:
+    image: python:3.6
+    volumes:
+      - ./worker:/worker
+    working_dir: /worker
+    command: bash ./app.sh
+    networks:
+      - fila
+    depends_on:
+      - queue
